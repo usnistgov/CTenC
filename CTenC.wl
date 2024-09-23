@@ -121,6 +121,7 @@ $indexExpand={};
 (*Objects are not index objects unless specified*)
 IndexQ[x_]:=False;
 
+SetAttributes[DependsQ,Orderless]
 DependsQ[head_Symbol,head_Symbol]:=True;
 DependsQ[head1_Symbol,head2_Symbol]:=False/;!SameQ[head1,head2]
 DependsQ[expr_,head_Symbol]:=True/;Internal`DependsOnQ[expr,head]

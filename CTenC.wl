@@ -459,7 +459,7 @@ $projectorSimplify=Join[$projectorSimplify,
 
 DefTensor[PermDelta,"\[CapitalPi]",ProjectionSuperscript->True,Idempotent->True,ConstantTensor->True];
 PermDelta[]:=1;
-PermDelta[i_,j_]:=delta[i,j];
+PermDelta[i_,j_]:=delta[i,j]/;!(Head[i]===Pattern)&&!(Head[j]===Pattern)
 
 
 $dimSym[n_]:=Binomial[$nDim+n-1,n];
@@ -491,7 +491,7 @@ $dimAnt[n_]:=Binomial[$nDim,n]
 
 DefTensor[GDelta,"\[ScriptCapitalE]",ProjectionSuperscript->True,Idempotent->True,ConstantTensor->True];
 GDelta[]:=1;
-GDelta[i_,j_]:=delta[i,j];
+GDelta[i_,j_]:=delta[i,j]/;!(Head[i]===Pattern)&&!(Head[j]===Pattern)
 
 GDelta[inds1__,inds2__]/;(Length[{inds1}]==Length[{inds2}]&&IntersectingQ[{inds1},{inds2}]):=Module[{inters,inds1c,inds2c},
 	inters=Intersection[{inds1},{inds2}];
@@ -522,7 +522,7 @@ $dimIrr[n_]:=(-2+$nDim+2 n)/(-2+$nDim+n) Binomial[$nDim+n-2,n]
 
 DefTensor[Delta,"\[CapitalDelta]",ProjectionSuperscript->True,Idempotent->True,ConstantTensor->True];
 Delta[]:=1
-Delta[i_,j_]:=delta[i,j]
+Delta[i_,j_]:=delta[i,j]/;!(Head[i]===Pattern)&&!(Head[j]===Pattern)
 
 Delta[inds1__,inds2__]/;(Length[{inds1}]==Length[{inds2}]&&IntersectingQ[{inds1},{inds2}]):=
 	Delta[Complement[{inds1},{inds2}],Complement[{inds2},{inds1}]]$dimIrr[Length[{inds1}]]/$dimIrr[Length[Complement[{inds1},{inds2}]]];
@@ -598,7 +598,7 @@ DefTensor[LeviC,"\[CurlyEpsilon]",$nDim,ConstantTensor->True,Symmetries-><|"anti
 SimplifyIndices[expr_]:=expr//Expand
 
 (*Full simplification*)
-IndexSimplify[expr_]:=FixedPoint[Expand[ReplaceRepeated[#,$functionSimplify]//ContractIndices//PrettyIndices]&,expr];
+IndexSimplify[expr_]:=FixedPoint[Expand[ReplaceRepeated[#,$functionSimplify]//ContractIndices//PrettyIndices//ProjectorSimplify]&,expr];
 
 
 (* ::Subsection:: *)
@@ -627,6 +627,7 @@ IndexPower/:IndexPower[head_,n_][inds1__,inds2__]IndexPower[head_,p_][inds2__,in
 GetIndices[IndexPower[expr_,_][inds__]]:={inds};
 
 
+
 (*Spherical harmonics*)
 IndexQ[IndexHarmonic[_,_][__]]:=True;
 IndexQ[IndexHarmonic[_,_]]:=True;
@@ -634,6 +635,10 @@ DependsQ[IndexHarmonic[head1_Symbol,_],head2_Symbol]:=DependsQ[head1,head2];
 
 (*The harmonic tensor is symmetric and traceless*)
 ProjectionOperator[IndexHarmonic[head_,n_]][inds___]:=Delta[inds];
+IndexHarmonic/:SymmetryQ[IndexHarmonic[head_,n_],
+	inds2_,"symmetric"]:=True;
+IndexHarmonic/:SymmetryQ[IndexHarmonic[head_,n_],
+	inds2_,"irreducible"]:=True;
 
 IndexHarmonic[head_,n_][inds_List]:=IndexHarmonic[head,n]@@inds;
 IndexHarmonic[head_,n_][inds__]/;(Length[{inds}]!=n):=Message[IndexHarmonic::rank,Length[{inds}],

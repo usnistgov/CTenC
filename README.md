@@ -6,3 +6,7 @@ The package is stored in `CTenC.wl` and can be loaded in a Mathematica notebook 
 Get["NewTensor'"]
 ```
 A tutorial describing the basic usage of the package is given in `Tutorial.nb`.
+
+Please cite as 
+
+Benjamin E. Dolata and Jonathan E. Seppala, CTenC: Cartesian TENsor Calculus package for Mathematica using index notation, National Institute of Standards and Technology, https://doi.org/10.18434/mds2-3504.

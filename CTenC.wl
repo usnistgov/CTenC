@@ -599,7 +599,7 @@ DefTensor[LeviC,"\[CurlyEpsilon]",$nDim,ConstantTensor->True,Symmetries-><|"anti
 SimplifyIndices[expr_]:=expr//Expand
 
 (*Full simplification*)
-IndexSimplify[expr_]:=FixedPoint[Expand[ReplaceRepeated[#,$functionSimplify]//ContractIndices//PrettyIndices//ProjectorSimplify]&,expr];
+IndexSimplify[expr_]:=FixedPoint[Expand[ReplaceRepeated[Expand[#],$functionSimplify]//ContractIndices//PrettyIndices//ProjectorSimplify]&,expr];
 
 
 (* ::Subsection:: *)

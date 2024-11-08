@@ -783,53 +783,58 @@ Di[expr_,head_?IndexQ[inds2__]]:=Module[{uniqueInds,dummyTens},
 ];*)
 Di[expr_,head_?IndexQ[inds2__]]:=Module[{dummyInds},
 	dummyInds=Take[$internalDummies,Length[{inds2}]];
-	ContractIndices[Dp[expr,head[dummyInds]]ProjectionOperator[head][dummyInds,{inds2}]]//SimplifyIndices
+	ContractIndices[Dp[expr,head][dummyInds]ProjectionOperator[head][dummyInds,{inds2}]]//SimplifyIndices
 ];
 
 
 (*Derivatives of defined functions*)
 IndexQ[Dp[__]]:=True;
-GetIndices[Dp[expr_,x_]]:=Flatten[{GetIndices[expr],GetIndices[x]}];
+Dp/:GetIndices[Dp[expr_,head_][inds__]]:=Flatten[{GetIndices[expr],{inds}}];
+Dp[expr_,head_][inds_List]:=Dp[expr,head][Sequence@@inds]
+
+(*Dirac delta simplicication rules for partial derivatives*)
+Dp/:delta[i_,j_]Dp[expr_, head_?IndexQ][inds1___,j_,inds2___]:=Dp[expr,head][inds1,i,inds2]
+Dp/:delta[i_,j_]Dp[ head_?IndexQ[inds1___,j_,inds2___],tens_][inds__]:=Dp[head[inds1,i,inds2],tens][inds]
 
 (*Generic partial derivatives*)
 Dp[expr_?NumericQ,__]:=0
-Dp[head_[inds1__],head_?IndexQ[inds2__]]:=Inner[delta,{inds1},{inds2},Times]
-Dp[head1_?IndexQ[inds1__],head2_?IndexQ[inds2__]]:=0/;!DependsQ[head1,head2]
+Dp[head_[inds1__],head_?IndexQ][inds2__]:=Inner[delta,{inds1},{inds2},Times]
+Dp[head1_?IndexQ[inds1__],head2_?IndexQ][inds2__]:=0/;!DependsQ[head1,head2]
 
 
 (*Derivatives of tensor-valued functions*)
-Dp[IndexPower[head_,n_?IntegerQ][i_,j_],head_[k_,l_]]/;n>0:=Module[{p},
+Dp[IndexPower[head_,n_?IntegerQ][i_,j_],head_][k_,l_]/;n>0:=Module[{p},
 	Sum[IndexPower[head,p][i,k]IndexPower[head,n-1-p][l,j],{p,0,n-1}]
 ];
-Dp[IndexPower[head_,n_?IntegerQ][i_,j_],head_[k_,l_]]/;n<0:=Module[{p},
+Dp[IndexPower[head_,n_?IntegerQ][i_,j_],head_][k_,l_]/;n<0:=Module[{p},
 	Sum[-IndexPower[head,p][i,k]IndexPower[head,n-1-p][l,j],{p,n,-1}]
 ];
 
-Dp[IndexHarmonic[head_,n_][inds__],head_[i_]]:=
+Dp[IndexHarmonic[head_,n_][inds__],head_][i_]:=
 	(2-$nDim-2n)IndexHarmonic[head,n+1][i,inds]/Norm[head]+
 	($nDim+n-2)head[i]IndexHarmonic[head,n][inds]/Norm[head]^2;
 
 
 (*Dervatives of tensor invariants*)
 (*Maybe should make the dependency more general later, in terms of chain rule*)
-Dp[Norm[head_],head_?IndexQ[inds__]]:=head[inds]/Norm[head];
-Dp[Norm[tens_],head_?IndexQ[inds__]]:=
+Dp[Norm[head_],head_?IndexQ][inds__]:=head[inds]/Norm[head];
+Dp[Norm[tens_],head_?IndexQ][inds__]:=
 	Dp[tens[Take[$internalDummies,Rank[tens]]],head[inds]]*
 	tens[Take[$internalDummies,Rank[tens]]]/Norm[tens];
 
-Dp[Dot[head_,head2_],head3_?IndexQ[inds__]]:=0/;!DependsQ[head,head3]&&!DependsQ[head2,head3]
-Dp[Dot[head_,head2_],head_?IndexQ[inds__]]:=ReverseApplied[head2][inds];
-Dp[Dot[head2_,head_],head_?IndexQ[inds__]]:=ReverseApplied[head2][inds];
+Dp[Dot[head_,head2_],head3_?IndexQ][inds__]:=0/;!DependsQ[head,head3]&&!DependsQ[head2,head3]
+Dp[Dot[head_,head2_],head_?IndexQ][inds__]:=ReverseApplied[head2][inds];
+Dp[Dot[head2_,head_],head_?IndexQ][inds__]:=ReverseApplied[head2][inds];
 
 (*Equation 9 of Dui and Chen 2007*)
 (*It might be useful to extend this to higher-rank tensors in the future*)
-Dp[PrincipalInvariant[head_?IndexQ,n_?IntegerQ],head_?IndexQ[i_,j_]]/;n>0:=
+Dp[PrincipalInvariant[head_?IndexQ,n_?IntegerQ],head_?IndexQ][i_,j_]/;n>0:=
 	Sum[(-1)^p PrincipalInvariant[head,n-1-p]IndexPower[head,p][j,i],{p,0,n-1}]
 	
 (*Derivatives of builtin functions*)
-Dp[Det[tens_],tens_?IndexQ[i_,j_]]:=Det[tens]IndexPower[tens,-1][j,i];
-Dp[Tr[tens_],tens_?IndexQ[i_,j_]]:=delta[i,j];
-Dp[Tr[tens_,n_],tens_?IndexQ[i_,j_]]:=n IndexPower[tens,n-1][j,i];
+Dp[Det[tens_],tens_?IndexQ][i_,j_]:=Det[tens]IndexPower[tens,-1][j,i];
+Dp[Tr[tens_],tens_?IndexQ][i_,j_]:=delta[i,j];
+Dp[Tr[tens_,n_],tens_?IndexQ][i_,j_]:=n IndexPower[tens,n-1][j,i];
 
 
 (* ::Subsubsection:: *)
@@ -861,11 +866,11 @@ MakeBoxes[head_?ProjectionSuperscriptQ[inds___], StandardForm] :=
 	SubsuperscriptBox[TensorSymbol[head],StringJoin@(ToString/@{inds}),
 	"("<>ToString[Length[{inds}]/2]<>","<>ToString[Length[{inds}]/2]<>")"];
 
+MakeBoxes[Dp[x_,y_][inds__], StandardForm]:=
+	RowBox[{FractionBox["\[PartialD]",RowBox[{"\[PartialD]",MakeBoxes[y[inds]]}]] ,MakeBoxes[x]}];
+
 MakeBoxes[head_?IndexQ[inds___], StandardForm] := 
 	SubscriptBox[TensorSymbol[head],StringJoin@(ToString/@{inds})];
-
-MakeBoxes[Dp[x_,y_], StandardForm]:=
-	RowBox[{FractionBox["\[PartialD]",RowBox[{"\[PartialD]",MakeBoxes[y]}]] ,MakeBoxes[x]}];
 	
 MakeBoxes[Norm[head_?IndexQ], StandardForm]:=TemplateBox[{StyleBox[TensorSymbol[head],Bold]},"Norm"];
 MakeBoxes[PrincipalInvariant[head_?IndexQ,n_?IntegerQ], StandardForm]:=SubsuperscriptBox["I",n,TensorSymbol[head]];

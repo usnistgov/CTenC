@@ -819,7 +819,7 @@ Dp[IndexHarmonic[head_,n_][inds__],head_][i_]:=
 (*Maybe should make the dependency more general later, in terms of chain rule*)
 Dp[Norm[head_],head_?IndexQ][inds__]:=head[inds]/Norm[head];
 Dp[Norm[tens_],head_?IndexQ][inds__]:=
-	Dp[tens[Take[$internalDummies,Rank[tens]]],head[inds]]*
+	Dp[tens[Take[$internalDummies,Rank[tens]]],head][inds]*
 	tens[Take[$internalDummies,Rank[tens]]]/Norm[tens];
 
 Dp[Dot[head_,head2_],head3_?IndexQ][inds__]:=0/;!DependsQ[head,head3]&&!DependsQ[head2,head3]

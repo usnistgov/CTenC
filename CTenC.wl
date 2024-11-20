@@ -845,11 +845,12 @@ Dp[Tr[tens_,n_],tens_?IndexQ][i_,j_]:=n IndexPower[tens,n-1][j,i];
 SurfaceIntegral[a_(b_+c_),surf_]:=SurfaceIntegral[a b,surf]+SurfaceIntegral[a c,surf];
 SurfaceIntegral[a_+b_,surf_]:=SurfaceIntegral[a,surf]+SurfaceIntegral[b,surf];
 
-SurfaceIntegral[expr_,{x_,a_}]/;Rank[x]==1:=Module[{inds,n},
-	inds=GetIndicesTerms[expr,x];
+SurfaceIntegral[expr_,{x_,a_}]/;Rank[x]==1:=Module[{inds,n,out},
+	out=expr//.{Dot[x,y_]^n_:>Module[{j},x[j]y[j]]Dot[x,y]^(n-1),Dot[x,y_]:>Module[{j},x[j]y[j]]};
+	inds=GetIndicesTerms[out,x];
 	n=Length[inds];
 	If[n//OddQ, 0,
-		Symdelta[inds]4\[Pi] (n-1)!!/(n+1)!! a^(n+2) (expr /.{x[_]->1,Norm[x]->a})
+		Symdelta[inds]4\[Pi] (n-1)!!/(n+1)!! a^(n+2) (out /.{x[_]->1,Norm[x]->a})
 	]
 ];
 

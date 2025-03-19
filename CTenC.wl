@@ -561,7 +561,7 @@ $symmetricFunction[head1_,head2_,inds1_,inds2_,n_]:=Module[
 ];
 
 (*coefficients for the expansion of the Delta function:
-Mane, Nucl. Instrum. Methods Phys. Res. A: Accel. Spectrom. Detect. Assoc. Equip. (2013)*) 
+Mane, Nucl. Instrum. Methods Phys. Res. A: Accel. Spectrom. Detect. Assoc. Equip. (2016)*) 
 $c[n_,p_]:=(-1/2)^p n!/p!/(n-2p)!(2n-2p+$nDim-4)!!/(2n+$nDim-4)!!;
 $nDim=3;
 $indexExpand=Join[$indexExpand,{Delta[inds___]:>

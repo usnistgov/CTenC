@@ -10,3 +10,7 @@ A tutorial describing the basic usage of the package is given in `Tutorial.nb`.
 Please cite as 
 
 Benjamin E. Dolata and Jonathan E. Seppala, CTenC: Cartesian TENsor Calculus package for Mathematica using index notation, National Institute of Standards and Technology, https://doi.org/10.18434/mds2-3504.
+
+# References
+* Ehrentraut, Harald, and Wolfgang Muschik. "On symmetric irreducible tensors in d-dimensions." *ARI-An International Journal for Physical and Engineering Sciences* 51 (1998): 149-159.
+* Mane, S. R. "Irreducible Cartesian tensors of highest weight, for arbitrary order." *Nuclear Instruments and Methods in Physics Research Section A: Accelerators, Spectrometers, Detectors and Associated Equipment* 813 (2016): 62-67.

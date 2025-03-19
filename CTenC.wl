@@ -24,6 +24,8 @@ PrettyIndices::usage == "Replace dummy indices with canonical indices supplied b
 
 Rank::usage == "Returns the rank of a tensor";
 
+IndexSet::usage == "Assignment operator with automatic dummy replacement";
+
 
 (*what am I?*)
 IndexQ::usage == "Returns true if object is a tensor";
@@ -274,6 +276,15 @@ PrettyIndices[expr_]:=Module[{oldInds,newInds,dummies},
 	newInds=Take[Complement[$dummyIndices,GetFreeIndices[expr]],Length[oldInds]];
 	ReplaceIndices[expr,oldInds,newInds]
 ]
+
+
+(* ::Subsubsection:: *)
+(*Function manipulations*)
+
+
+SetAttributes[IndexSet,{HoldFirst}]
+IndexSet[lhs_,rhs_]:=ReplacePart[Hold[lhs:=ContractIndices[rhs]],rhs//IndexSimplify//ContractIndices,{1,2,1}]//ReleaseHold;
+DotEqual=IndexSet;
 
 
 (* ::Subsubsection:: *)
@@ -845,8 +856,11 @@ Dp[Tr[tens_,n_],tens_?IndexQ][i_,j_]:=n IndexPower[tens,n-1][j,i];
 SurfaceIntegral[a_(b_+c_),surf_]:=SurfaceIntegral[a b,surf]+SurfaceIntegral[a c,surf];
 SurfaceIntegral[a_+b_,surf_]:=SurfaceIntegral[a,surf]+SurfaceIntegral[b,surf];
 
+SurfaceIntegral[0,surf_]:=0
+
 SurfaceIntegral[expr_,{x_,a_}]/;Rank[x]==1:=Module[{inds,n,out},
-	out=expr//.{Dot[x,y_]^n_:>Module[{j},x[j]y[j]]Dot[x,y]^(n-1),Dot[x,y_]:>Module[{j},x[j]y[j]]};
+	out=expr//.{Dot[x,y_]^n_:>Module[{j},x[j]y[j]]Dot[x,y]^(n-1),Dot[x,y_]:>Module[{j},x[j]y[j]],
+		Dot[y_,x]^n_:>Module[{j},x[j]y[j]]Dot[y,x]^(n-1),Dot[y_,x]:>Module[{j},x[j]y[j]]};
 	inds=GetIndicesTerms[out,x];
 	n=Length[inds];
 	If[n//OddQ, 0,

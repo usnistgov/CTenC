@@ -10,5 +10,5 @@ Initial version
 
 ## Version 1.1.0
 * Added `IndexSet`, which generates functions with unique dummy indices each time it is evaluated
-* Rank now works correctly on projection operators
+* Improved behavoir of the `Rank` function, and consistent interaction of rank with `IndexPower`
 * Improved tutorial

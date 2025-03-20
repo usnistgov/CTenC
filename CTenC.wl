@@ -86,6 +86,9 @@ TensorSymbol::usage == "Symbol for displaying object";
 (*Error messages*)
 Tensor::rank = "`1` indices specified for rank `2` tensor `3`";
 PrettyIndices::dummies = "`1` dummy indices gives for expression with `2` dummy indices";
+
+IndexPower::rank = "`1` indices specified for power of rank `2` tensor `3`";
+IndexPower::odd = "tensor power is undefined for odd-rank tensors";
 IndexHarmonic::rank = "`1` indices specified for rank `2` harmonic tensor in `3`";
 
 
@@ -262,7 +265,7 @@ ContractIndices[expr_]:=Module[{return,dums},
 (*Index replacement operations*)
 ReplaceIndices[expr_,oldInds_,newInds_]:=expr/.Thread@(oldInds->newInds)
 
-(*Done use multiplication rules like this, it scales as N!*)
+(*Don't use multiplication rules like this, it scales as N!*)
 (*PrettyIndices[x_?NumericQ expr_]:=x PrettyIndices[expr];*)
 PrettyIndices[expr_Plus]:=PrettyIndices[#]&/@expr;
 
@@ -626,6 +629,11 @@ IndexQ[IndexPower[__][__]]:=True;
 IndexQ[IndexPower[__]]:=True;
 DependsQ[IndexPower[head1_Symbol,_],head2_Symbol]:=DependsQ[head1,head2];
 
+Rank[IndexPower[head_,n_]]:=Rank[head];
+IndexPower[head_,n_][inds__]/;(Length[{inds}]!=Rank[head]):=Message[IndexPower::rank,Length[{inds}],
+		Rank[head],head];
+IndexPower[head_,n_][inds__]/;(Length[{inds}]//OddQ&&!Head[inds]===Pattern):=Message[IndexPower::odd];
+
 IndexPower[_,0][inds__]:=delta[inds];
 IndexPower[head_,1][inds__]:=head[inds];
 
@@ -644,6 +652,7 @@ GetIndices[IndexPower[expr_,_][inds__]]:={inds};
 IndexQ[IndexHarmonic[_,_][__]]:=True;
 IndexQ[IndexHarmonic[_,_]]:=True;
 DependsQ[IndexHarmonic[head1_Symbol,_],head2_Symbol]:=DependsQ[head1,head2];
+Rank[IndexHarmonic[head_,n_]]:=n;
 
 (*The harmonic tensor is symmetric and traceless*)
 ProjectionOperator[IndexHarmonic[head_,n_]][inds___]:=Delta[inds];
